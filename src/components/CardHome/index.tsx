@@ -9,25 +9,25 @@ export default function CardHome() {
   const [video2, setVideo2] = useState("");
   const [video1Start, setVideo1Start] = useState(0);
   const [video2Start, setVideo2Start] = useState(0);
+  const [playersVideo, setPlayersVideo] = useState<{
+    playerVideoOne: YouTubeEvent | null;
+    playerVideoTow: YouTubeEvent | null;
+  }>({
+    playerVideoOne: null,
+    playerVideoTow: null,
+  });
   const videoOneRef = useRef<HTMLInputElement>(null);
   const videoTowRef = useRef<HTMLInputElement>(null);
   const videoTimeStartOneRef = useRef<HTMLInputElement>(null);
   const videoTimeStartTowRef = useRef<HTMLInputElement>(null);
-	const playersVideo: {
-    playerVideoOne: YouTubeEvent | null;
-    playerVideoTow: YouTubeEvent | null;
-  } = {
-    playerVideoOne: null,
-    playerVideoTow: null,
-  };
 
   const handleSplitUrl = (url: string) => {
     return url.split("v=")[1].split("&")[0];
   };
 
-	const handleConvertTimeToSeconds = (time: string) => {
-		console.log(time.split(":").reduce((acc, time) => (60 * acc) + time));
-	}
+  const handleConvertTimeToSeconds = (time: string) => {
+    return Number(time.split(":").reduce((acc, time) => String(60 * Number(acc) + Number(time))));
+  };
 
   const handleLoadingVideo = () => {
     if (
@@ -35,25 +35,27 @@ export default function CardHome() {
       videoOneRef.current.value &&
       videoTowRef.current &&
       videoTowRef.current.value &&
-      videoTimeStartOneRef.current
+      videoTimeStartOneRef.current &&
+      videoTimeStartTowRef.current
     ) {
       setVideo1(handleSplitUrl(videoOneRef.current.value));
-      // setVideo1Start(handleConvertTimeToSeconds(videoTimeStartOneRef.current.value ?? 0));
       setVideo2(handleSplitUrl(videoTowRef.current.value));
-			handleConvertTimeToSeconds(videoTimeStartOneRef.current.value ?? 0);
+      setVideo1Start(handleConvertTimeToSeconds(videoTimeStartOneRef.current.value ? videoTimeStartOneRef.current.value : "1"));
+      console.log(videoTimeStartOneRef.current.value ? videoTimeStartOneRef.current.value : "0");
+      setVideo2Start(handleConvertTimeToSeconds(videoTimeStartTowRef.current.value ? videoTimeStartTowRef.current.value : "1"));
     } else {
       toast.error("Por favor, preencha os dois campos");
     }
   };
 
   const handlePauseVideo = () => {
-		if (playersVideo.playerVideoOne && playersVideo.playerVideoTow) {
+    if (playersVideo.playerVideoOne && playersVideo.playerVideoTow) {
       playersVideo.playerVideoOne.target.pauseVideo();
       playersVideo.playerVideoTow.target.pauseVideo();
     }
-	};
+  };
 
-	const handlePlayVideo = () => {
+  const handlePlayVideo = () => {
     if (playersVideo.playerVideoOne && playersVideo.playerVideoTow) {
       playersVideo.playerVideoOne.target.playVideo();
       playersVideo.playerVideoTow.target.playVideo();
@@ -88,7 +90,13 @@ export default function CardHome() {
                 iframeClassName="aspect-video"
                 videoId={video2}
                 onReady={(event) => {
-                  playersVideo.playerVideoTow = event;
+                  setPlayersVideo((old) => ({ ...old, playerVideoTow: event}));
+                }}
+                onPlay={(event) => {
+                  setPlayersVideo((old) => ({ ...old, playerVideoTow: event}));
+                }}
+                onPause={(event) => {
+                  setPlayersVideo((old) => ({ ...old, playerVideoTow: event}));
                 }}
                 opts={{
                   width: "100%",
@@ -121,29 +129,31 @@ export default function CardHome() {
           <div className="flex w-full gap-5">
             <div className="w-1/2 flex gap-5">
               <input
-                className="py-2 px-4 rounded-lg w-10/12"
+                className="py-2 px-4 rounded-lg w-9/12"
                 ref={videoOneRef}
                 type="text"
                 placeholder="Ex: https://www.youtube.com/watch?v=ZiP1l7jlIIA"
               />
               <input
-                className="py-2 px-4 rounded-lg w-2/12"
+                className="py-2 px-4 rounded-lg w-3/12"
                 ref={videoTimeStartOneRef}
                 type="time"
+                step={2}
                 placeholder="Ex: https://www.youtube.com/watch?v=ZiP1l7jlIIA"
               />
             </div>
             <div className="w-1/2 flex gap-5">
               <input
-                className="py-2 px-4 rounded-lg w-10/12"
+                className="py-2 px-4 rounded-lg w-9/12"
                 ref={videoTowRef}
                 type="text"
                 placeholder="Ex: https://www.youtube.com/watch?v=ZiP1l7jlIIA"
               />
               <input
-                className="py-2 px-4 rounded-lg w-2/12"
+                className="py-2 px-4 rounded-lg w-3/12"
                 ref={videoTimeStartTowRef}
                 type="time"
+                step={2}
                 placeholder="Ex: https://www.youtube.com/watch?v=ZiP1l7jlIIA"
               />
             </div>
